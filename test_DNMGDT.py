@@ -6,7 +6,7 @@ import time
 import cv2
 from torch.autograd import Variable
 from TMM_model import *
-logdir = './checkpoints\\'
+logdir = './checkpoints/'
 which_model= 'netG.pth'
 save_path_ohaze ='./ohaze/'
 save_path_ihaze ='./ihaze/'
