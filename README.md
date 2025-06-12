@@ -3,7 +3,9 @@ This is the official Python implementation of our paper "Real Scene Single Image
 
 # Contributions
 1 We propose DNMPDT, a novel semi-supervised dehazing model for real scene image dehazing, which simultaneously utilizes real hazy data set and synthetic hazy data set to train one encoder-decoder architecture in a parameter-shared way, and thus frees from two-stage training (pretraining and fine-tuning).
+
 2 We propose an effective image fusion mechanism termed IQGAW to yield more reliable fake clean images for real hazy ones, which adaptively weights various prior-based dehazed images with the guidance of chosen image quality indexes, automatically attaching importance to some local regions by content variations. 
+
 3 We propose  an image level domain transfer strategy termed PMGDT to reduce the domain gap for the collaborative training between real hazy and synthetic hazy data sets. 
 
 For the proposed  IQGAW and PMGDT , you can find them in "train_DNMGDT".
@@ -25,7 +27,7 @@ def test_ohaze():
     ...
     imgs_hazy = glob.glob('F:\\dataset\\NTIRE2018\\O-HAZE\\hazy\\*.jpg')
 ```
-After that, you should change to test "test_ohaze()" function as
+After that, you should change to  "test_ohaze()" function as
 ```
 if __name__ =='__main__':
     test_ohaze()
@@ -36,6 +38,7 @@ The dehazed results of all ohaze hazy images will be saved to  "ohaze" file.
 Before running "train_DNMGDT", you should change to your paths. 
 
 1 ***change the used traning data sets by "train_data"***.  :exclamation: Note: there are two training data (synthetic haze dataset and real haze dataset) for a semi-supervised training model like our DNMGDT. The used synthetic (syn for short) haze dataset are 6000 paired images in [1]. You can directly download at syn data by  [Link](https://pan.baidu.com/s/1IxvqIE9LgUm6DYDkek4j8g), extract code 2wj3. Since the real   haze dataset do not have paired real clean images, we have proposed a IQGAW method obtain the fake clean image by fusing multiple prior-based dehazed images. Our real haze dataset can be downloaded by  [Link](https://pan.baidu.com/s/13J4miQv30_SHRy4l9f8RbA?pwd=1234), extract code 1234. We provide two extra prior dehazed images obtained by BDCP and BCCR. We conduct ablation experiment that trains our model by using from one to six prior-based dehazed images. We have found that using more than three prior based method can  generate a decent fake clean image, achieving competitive results. The pretrained model "netG.pth" is traind by using four priors including DCP, IDRLP, NLD and IDE, and we use it to report the experiments in our paper.
+
 2 ***change the validation data sets by "test_data"***. :exclamation: Note: here the  validation data set (e.g., ohaze) is used to visualize the results during training, providing the visualization of training process.
 ```
 train_data = SemiDatasets('D:\Data\DAADPTION_CVPR2020\\train\\', 'D:\\UnDehaze\\hazy\\')
@@ -52,25 +55,7 @@ If you succeed to train our model, you should know the recording method of this 
 3 Moreover, after  every epoch, we save the traned model in "checkpoints/semimodel_paper". The naming of the trained model includes the epoch number and the PSNR value (e.g., netG_model_0_17.124600928830542.pth), providing convenience for distinguishing them. The pretrained model "netG.pth" is renamed by ourselves.
 # References
 [1] Shao, Y., Li, L., Ren, W., Gao, C., and Sang, N.. Domain adaptation for image dehazing. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, 2020: 2808-2817.
-```
-cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_s_hazy.png".format(iteration),
-                            out_hazy)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_s_gt.png".format(iteration),
-                            out_gt)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_s_out.png".format(iteration),
-                            fake_out)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_real.png".format(iteration),
-                            out_r)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_r_out.png".format(iteration),
-                            fake_out0)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_NLD.png".format(iteration),
-                            out_NLD)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_BCCR.png".format(iteration), out_BCCR)
-                # cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_weight.png".format(iteration), out_weight)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_DCP.png".format(iteration),
-                            out_DCP)
-                cv2.imwrite("D:\\pytorch_model\\torch_dehaze\\samples\\{}_BDCP.png".format(iteration),
-```
+
 # Citation
 ```
 @ARTICLE{DNMGDT,
