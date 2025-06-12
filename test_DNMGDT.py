@@ -5,7 +5,7 @@ import glob
 import time
 import cv2
 from torch.autograd import Variable
-from TMM_model import *
+from model import *
 logdir = './checkpoints/'
 which_model= 'netG.pth'
 save_path_ohaze ='./ohaze/'
@@ -20,7 +20,6 @@ def test_ohaze():
     time_test = 0
     count = 0
     imgs_hazy = glob.glob('F:\\dataset\\NTIRE2018\\O-HAZE\\hazy\\*.jpg')
-
 
     for hazy_name in imgs_hazy:
 

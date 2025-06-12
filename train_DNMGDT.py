@@ -12,7 +12,7 @@ import  time
 import cv2
 use_cuda = torch.cuda.is_available()
 
-save_path = os.path.join("checkpoint", 'semi_model')
+save_path = os.path.join("checkpoints", 'semi_model')
 name = 'semimodel_paper'
 
 def findLastCheckpoint(save_dir):
@@ -36,8 +36,8 @@ def train():
     np.random.seed(3407)
 
     train_data = SemiDatasets('F:\dataset\DomainAdaption\\train\\', 'D:\\realDehaze\\hazy\\')
-    test_data = SemiDatasets('D:\Data\\O-HAZE\Data\\all\hazy\\',
-                              'D:\\UnDehaze\\hazy\\','D:\Data\\O-HAZE\Data\\all\GT\\',
+    test_data = SemiDatasets('F:\dataset\\NTIRE2018\\O-HAZE\hazy\\',
+                               'F:\dataset\\NTIRE2018\\O-HAZE\\','F:\dataset\\NTIRE2018\\O-HAZE\GT\\',
                               istrain=False)
 
     training_data_loader = DataLoader(dataset=train_data, num_workers=4, batch_size=1,
@@ -45,10 +45,7 @@ def train():
     testing_data_loader = DataLoader(dataset=test_data, num_workers=4, batch_size=1,
                                      shuffle=False)
     device = torch.device("cuda:0" if use_cuda else "cpu")
-    # the ratio for different image quality indexes
-    ratio = 10
-    # the temprature for the image quality of the dehazed image
-    temp = 100
+
 
     net = Model_Semi_base().to(device)
     net_DCP = DCPDehazeGenerator(win_size=7,r=30).to(device)
@@ -160,7 +157,7 @@ def train():
 
             syn_a1, real_a1 = PMGDT(syn_a, real_FGT)
             fake_b_s1 = net(syn_a1 * 2 - 1)
-            fake_b_a1 = net(real_a1 * 2 - 1)
+            fake_b_r1 = net(real_a1 * 2 - 1)
 
             # add the GAN training
             set_requires_grad(net_D1, True)
@@ -183,7 +180,7 @@ def train():
 
             loss_d = -criterion(syn_b/ 2. + 0.5, fake_b_s / 2. + 0.5)[0]
 
-            loss_c = criterionMSE(fake_b_s1, syn_b) + criterionMSE(fake_b_r, fake_b_a1)
+            loss_c = criterionMSE(fake_b_s1, syn_b) + criterionMSE(fake_b_r, fake_b_r1)
 
             loss_u1 = IQGAW(fake_b_r,real_NLD, real_IDRLP, real_DCP, real_IDE, entropy_0, entropy_1, entropy_2, entropy_3)
 
@@ -204,59 +201,58 @@ def train():
                         loss_c.mean().item(),loss_D1.item(),loss_G_GAN.item()))
 
             if iteration % 200 == 0:
-                out_hazy = (syn_a[0]).cpu().detach().permute(1, 2, 0).numpy()
-                out_gt = (syn_b[0]).cpu().detach().permute(1, 2, 0).numpy()
-                fake_out = (fake_b_s[0]).cpu().detach().permute(1, 2, 0).numpy()
-                fake_out0 = (fake_b_r[0]).cpu().detach().permute(1, 2, 0).numpy()
+                syn_a = (syn_a[0]).cpu().detach().permute(1, 2, 0).numpy()
+                syn_b = (syn_b[0]).cpu().detach().permute(1, 2, 0).numpy()
+                pred_syn = (fake_b_s[0]).cpu().detach().permute(1, 2, 0).numpy()
+                pred_real = (fake_b_r[0]).cpu().detach().permute(1, 2, 0).numpy()
+                real_a = (real_a[0]).cpu().detach().permute(1, 2, 0).numpy()
+                syn_a1 = ((syn_a1*2-1)[0]).cpu().detach().permute(1, 2, 0).numpy()
+                real_a1 = ((real_a1*2-1)[0]).cpu().detach().permute(1, 2, 0).numpy()
+                pred_syn1 = (fake_b_s1[0]).cpu().detach().permute(1, 2, 0).numpy()
+                pred_real1 = (fake_b_r1[0]).cpu().detach().permute(1, 2, 0).numpy()
 
-                out_r = (real_a[0]).cpu().detach().permute(1, 2, 0).numpy()
-                out_NLD = ((syn_a1*2-1)[0]).cpu().detach().permute(1, 2, 0).numpy()
-                out_BCCR = ((real_a1*2-1)[0]).cpu().detach().permute(1, 2, 0).numpy()
-                out_DCP = (fake_b_s1[0]).cpu().detach().permute(1, 2, 0).numpy()
-                out_BDCP = (fake_b_a1[0]).cpu().detach().permute(1, 2, 0).numpy()
+                syn_a = np.clip(syn_a, -1, 1)
+                syn_b = np.clip(syn_b, -1, 1)
+                pred_syn = np.clip(pred_syn, -1, 1)
+                pred_real = np.clip(pred_real, -1, 1)
+                real_a = np.clip(real_a, -1, 1)
+                syn_a1 = np.clip(syn_a1, -1, 1)
+                real_a1 = np.clip(real_a1, -1, 1)
+                pred_syn1 = np.clip(pred_syn1, -1, 1)
+                pred_real1 = np.clip(pred_real1, -1, 1)
 
-                out_r = np.clip(out_r, -1, 1)
-                out_NLD = np.clip(out_NLD, -1, 1)
-                out_BCCR = np.clip(out_BCCR, -1, 1)
-                out_DCP = np.clip(out_DCP, -1, 1)
-                out_BDCP = np.clip(out_BDCP, -1, 1)
+                syn_a = ((syn_a + 1) / 2 * 255).astype(np.uint8)
+                syn_b = ((syn_b + 1) / 2 * 255).astype(np.uint8)
+                pred_syn = ((pred_syn + 1) / 2 * 255).astype(np.uint8)
+                pred_real = ((pred_real + 1) / 2 * 255).astype(np.uint8)
+                real_a= ((real_a+ 1) / 2 * 255).astype(np.uint8)
+                syn_a1 = ((syn_a1 + 1) / 2 * 255).astype(np.uint8)
+                real_a1 = ((real_a1 + 1) / 2 * 255).astype(np.uint8)
+                pred_syn1 = ((pred_syn1 + 1) / 2 * 255).astype(np.uint8)
+                pred_real1 = ((pred_real1 + 1) / 2 * 255).astype(np.uint8)
 
-                out_r = ((out_r + 1) / 2 * 255).astype(np.uint8)
-                out_NLD = ((out_NLD + 1) / 2 * 255).astype(np.uint8)
-                out_BCCR = ((out_BCCR + 1) / 2 * 255).astype(np.uint8)
-                out_DCP = ((out_DCP + 1) / 2 * 255).astype(np.uint8)
-                out_BDCP = ((out_BDCP + 1) / 2 * 255).astype(np.uint8)
-                fake_out = np.clip(fake_out, -1, 1)
-                fake_out0 = np.clip(fake_out0, -1, 1)
+                syn_a = cv2.cvtColor(syn_a, cv2.COLOR_RGB2BGR)
+                syn_b = cv2.cvtColor(syn_b, cv2.COLOR_RGB2BGR)
+                pred_syn = cv2.cvtColor(pred_syn, cv2.COLOR_RGB2BGR)
+                pred_real = cv2.cvtColor(pred_real, cv2.COLOR_RGB2BGR)
+                real_a = cv2.cvtColor(real_a, cv2.COLOR_RGB2BGR)
+                syn_a1 = cv2.cvtColor(syn_a1, cv2.COLOR_RGB2BGR)
+                real_a1 = cv2.cvtColor(real_a1, cv2.COLOR_RGB2BGR)
+                pred_syn1 = cv2.cvtColor(pred_syn1, cv2.COLOR_RGB2BGR)
+                pred_real1 = cv2.cvtColor(pred_real1, cv2.COLOR_RGB2BGR)
 
-                out_hazy = ((out_hazy + 1) / 2 * 255).astype(np.uint8)
-                out_gt = ((out_gt + 1) / 2 * 255).astype(np.uint8)
-                fake_out = ((fake_out + 1) / 2 * 255).astype(np.uint8)
-                fake_out0 = ((fake_out0 + 1) / 2 * 255).astype(np.uint8)
-                # fake_out1 = ((fake_out1 + 1) / 2 * 255).astype(np.uint8)
-                # fake_out2 = ((fake_out2 + 1) / 2 * 255).astype(np.uint8)
-                out_hazy = cv2.cvtColor(out_hazy, cv2.COLOR_RGB2BGR)
-                out_gt = cv2.cvtColor(out_gt, cv2.COLOR_RGB2BGR)
-                fake_out = cv2.cvtColor(fake_out, cv2.COLOR_RGB2BGR)
-                fake_out0 = cv2.cvtColor(fake_out0, cv2.COLOR_RGB2BGR)
+                cv2.imwrite("./samples/{}_syn_hazy.png".format(iteration), syn_a)
+                cv2.imwrite("./samples/{}_real_hazy.png".format(iteration), real_a)
+                cv2.imwrite("./samples/{}_syn_transfer_hazy.png".format(iteration), syn_a1)
+                cv2.imwrite("./samples/{}_real_transfer_hazy.png".format(iteration), real_a1)
+                cv2.imwrite("./samples/{}_syn_gt.png".format(iteration), syn_b) # note: real hazy images do not have GTs, and we use different prior dehazed images as fake GTs. Here we did not visualize them.
+                cv2.imwrite("./samples/{}_syn_dehaze.png".format(iteration), pred_syn)
+                cv2.imwrite("./samples/{}_real_dehaze.png".format(iteration), pred_real)
+                cv2.imwrite("./samples/{}_syn_transfer_dehaze.png".format(iteration), pred_syn1)
+                cv2.imwrite("./samples/{}_real_transfer_dehaze.png".format(iteration), pred_real1)
 
-                out_r = cv2.cvtColor(out_r, cv2.COLOR_RGB2BGR)
-                out_NLD = cv2.cvtColor(out_NLD, cv2.COLOR_RGB2BGR)
-                out_BCCR = cv2.cvtColor(out_BCCR, cv2.COLOR_RGB2BGR)
-                out_DCP = cv2.cvtColor(out_DCP, cv2.COLOR_RGB2BGR)
-                out_BDCP = cv2.cvtColor(out_BDCP, cv2.COLOR_RGB2BGR)
 
-                cv2.imwrite("./samples/{}_s_hazy.png".format(iteration), out_hazy)
-                cv2.imwrite("./samples/{}_s_gt.png".format(iteration), out_gt)
-                cv2.imwrite("./samples/{}_s_out.png".format(iteration), fake_out)
-                cv2.imwrite("./samples/{}_real.png".format(iteration), out_r)
-                cv2.imwrite("./samples/{}_r_out.png".format(iteration), fake_out0)
-                cv2.imwrite("./samples/{}_NLD.png".format(iteration), out_NLD)
-                cv2.imwrite("./samples/{}_BCCR.png".format(iteration), out_BCCR)
-                cv2.imwrite("./samples/{}_DCP.png".format(iteration),
-                            out_DCP)
-
-            if iteration % 4500 == 0:
+            if iteration % 3000 == 0:
                     with torch.no_grad():
                         net.eval()
                         avg_psnr = 0
@@ -281,7 +277,7 @@ def train():
                         torch.save(net, model_out_path)
 
                     print("Checkpoint saved to {}".format("checkpoint" + 'semi_model'))
-        # if iteration % 4500 == 0:
+
         if epoch % 1 == 0:
             with torch.no_grad():
                 net.eval()
