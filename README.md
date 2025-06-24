@@ -12,8 +12,11 @@ For the proposed  IQGAW and PMGDT , you can find them in "train_DNMGDT".
 
 # Our Environment
 Python (3.6)
+
 PyTorch (1.10) 
+
 numpy (1.13.3)
+
 Now we detail the usage of this code!
 # Usage
 ## Quick test by our pretrained model
