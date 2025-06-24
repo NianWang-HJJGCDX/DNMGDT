@@ -9,15 +9,12 @@ This is the official Python implementation of our paper "Real Scene Single Image
 3 We propose  an image level domain transfer strategy termed PMGDT to reduce the domain gap for the collaborative training between real hazy and synthetic hazy data sets. 
 
 For the proposed  IQGAW and PMGDT , you can find them in "train_DNMGDT".
-# For more works
-My studies focus on machine learning (deep learning) and its applications to image enhancement, data clustering (classification), object recognition (tracking) etc.  If you are interested at my works, you can get more papers and codes at my [Homepage](https://nianwang-hjjgcdx.github.io/).
 
-Now we detail the usage of this code!
 # Our Environment
 Python (3.6)
 PyTorch (1.10) 
 numpy (1.13.3)
-
+Now we detail the usage of this code!
 # Usage
 ## Quick test by our pretrained model
 The pretrained model "netG.pth" has been put in "checkpoints". Before running "test_DNMGDT", you should change to your paths. For convenience, we build a  function for each testing data set e.g., ihaze and ohaze. Therefore, you should first change the data path for corresponding test function by 
@@ -69,3 +66,5 @@ If you succeed to train our model, you should know the recording method of this 
   keywords={Training;Atmospheric modeling;Learning systems;Synthetic data;Indexes;Image color analysis;Computational modeling;Adaptation models;Translation;Training data;Single image dehazing;multi-prior guidance;domain transfer;image quality guided adaptive weighting;consistency constraint},
   doi={10.1109/TMM.2025.3543063}}
 ```
+# For more works
+My studies focus on machine learning (deep learning) and its applications to image enhancement, data clustering (classification), object recognition (tracking) etc.  If you are interested at my works, you can get more papers and codes at my [Homepage](https://nianwang-hjjgcdx.github.io/).
